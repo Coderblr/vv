@@ -1,0 +1,153 @@
+
+
+import { useState } from "react";
+import { styles } from "../../styles/AppStyles";
+
+export default function LoanAccountView() {
+    const [cif, setCif] = useState("");
+    const [region, setRegion] = useState();
+    const [loan_type, setLoan_Type] = useState();
+    const [response, setResponse] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [status, setStatus]= useState("")
+    const [error, setError] = useState("");
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        setLoading(true);
+        setError(null);
+        setResponse([]);
+        const userToken = localStorage.getItem('userToken');
+        const url = `http://loan_account_creation/`;
+
+        try {
+            const res = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${userToken}`,
+                },
+                body: JSON.stringify({
+                    region: region,
+                    loan_type: loan_type,
+                    
+                }),
+            });
+
+            if (!res.ok) {
+                throw new Error(
+                    `API returned an error: ${res.status} ${res.statusText}`
+                );
+            }
+
+            const data = await res.json();
+            console.log("API Response Data:", data); 
+
+            setResponse(data);//imp
+            setLoan_Type(data.loan_response)
+            setStatus(data.Status)
+
+            // const extraction = data.substring(141, 141+11)
+            // console.log(extraction)
+        } catch (err) {
+            console.error("Fetch error:", err);
+            setError(err.message);
+        
+            setResponse([
+                { res_data: JSON.stringify({ ERROR_DESCRIPTION: err.message }) },
+            ]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    
+
+    return (
+        <div>
+            <div style={styles.pageHeader}>
+                <div>
+                    <h1 style={styles.pageTitle}>Create Loan Account</h1>
+                    <p style={styles.pageSubtitle}>Generate loan accounts for testing</p>
+                </div>
+            </div>
+
+            <div style={styles.formCard}>
+                <form onSubmit={handleSubmit}>
+                    <div style={styles.formGrid}>
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>Region</label>
+                            <select
+                                value={region}
+                                onChange={(e) => setRegion(e.target.value)}
+                                style={styles.select}
+                                required
+                            >
+                                <option value="O">O - UAT</option>
+                                <option value="X">X - UAT</option>
+                                <option value="Y">Y - UAT</option>
+                                <option value="Z">Z - UAT</option>
+                                <option value="k">K - Pre-Prod</option>
+                                <option value="J">J - Pre-Prod</option>
+                                <option value="R1">R1 - Pre-Prod</option>
+                                <option value="Y2">Y2 - Pre-Prod</option>
+                                <option value="L">L - Pre-Prod</option>
+                                <option value="C">C - Pre-Prod</option>
+                            </select>
+                        </div>
+
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>CIF</label>
+                            <input
+                                type="text"
+                                value={cif}
+                                onChange={(e) => setCif(e.target.value)}
+                                style={styles.input}
+                                required
+                            />
+                        </div>
+
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>Loan Type</label>
+                            <select
+                                value={loan_type}
+                                onChange={(e) => setLoan_Type(e.target.value)}
+                                style={styles.select}
+                                required
+                            >
+                                <option value="home">Home Loan</option>
+                                <option value="education">Education Loan</option>
+                                <option value="vehicle">Vehicle Loan</option>
+                                <option value="agri">Agriculture Loan</option>
+
+                            </select>
+                        </div>
+
+                        
+
+                        
+                    </div>
+
+                    <button type="submit" style={styles.primaryButton} disabled={loading}>
+                        {loading ? "Submitting..." : "Submit"}
+                    </button>
+                </form>
+            </div>
+
+            {response && (
+                <div style={styles.resultsCard}>
+            <p> <strong> Status: </strong>{response.status}</p>
+                <p>
+                    <strong>Loan Account Number: </strong>{response.loan_response}
+                </p>
+
+
+                </div>
+                
+            )}
+          
+            
+        </div>
+    );
+}
+

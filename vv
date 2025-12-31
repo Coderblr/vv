@@ -1,15 +1,13 @@
-
-
 import { useState } from "react";
 import { styles } from "../../styles/AppStyles";
 
 export default function LoanAccountView() {
     const [cif, setCif] = useState("");
-    const [region, setRegion] = useState();
-    const [loan_type, setLoan_Type] = useState();
+    const [region, setRegion] = useState("");
+    const [loan_type, setLoan_Type] = useState("");
     const [response, setResponse] = useState("");
     const [loading, setLoading] = useState(false);
-    const [status, setStatus]= useState("")
+    const [status, setStatus] = useState("");
     const [error, setError] = useState("");
 
     const handleSubmit = async (event) => {
@@ -30,7 +28,6 @@ export default function LoanAccountView() {
                 body: JSON.stringify({
                     region: region,
                     loan_type: loan_type,
-                    
                 }),
             });
 
@@ -43,12 +40,12 @@ export default function LoanAccountView() {
             const data = await res.json();
             console.log("API Response Data:", data); 
 
-            setResponse(data);//imp
-            setLoan_Type(data.loan_response)
-            setStatus(data.Status)
+            setResponse(data);
+            setStatus(data.Status);
+            
+            // Reset the loan type dropdown to initial state after successful submission
+            setLoan_Type("");
 
-            // const extraction = data.substring(141, 141+11)
-            // console.log(extraction)
         } catch (err) {
             console.error("Fetch error:", err);
             setError(err.message);
@@ -60,8 +57,6 @@ export default function LoanAccountView() {
             setLoading(false);
         }
     };
-
-    
 
     return (
         <div>
@@ -83,6 +78,7 @@ export default function LoanAccountView() {
                                 style={styles.select}
                                 required
                             >
+                                <option value="">Select Region</option>
                                 <option value="O">O - UAT</option>
                                 <option value="X">X - UAT</option>
                                 <option value="Y">Y - UAT</option>
@@ -115,17 +111,13 @@ export default function LoanAccountView() {
                                 style={styles.select}
                                 required
                             >
+                                <option value="">Select Loan Type</option>
                                 <option value="home">Home Loan</option>
                                 <option value="education">Education Loan</option>
                                 <option value="vehicle">Vehicle Loan</option>
                                 <option value="agri">Agriculture Loan</option>
-
                             </select>
                         </div>
-
-                        
-
-                        
                     </div>
 
                     <button type="submit" style={styles.primaryButton} disabled={loading}>
@@ -134,20 +126,12 @@ export default function LoanAccountView() {
                 </form>
             </div>
 
-            {response && (
+            {response && response.loan_response && (
                 <div style={styles.resultsCard}>
-            <p> <strong> Status: </strong>{response.status}</p>
-                <p>
-                    <strong>Loan Account Number: </strong>{response.loan_response}
-                </p>
-
-
+                    <p><strong>Status: </strong>{response.status}</p>
+                    <p><strong>Loan Account Number: </strong>{response.loan_response}</p>
                 </div>
-                
             )}
-          
-            
         </div>
     );
 }
-

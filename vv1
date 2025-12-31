@@ -1,0 +1,212 @@
+import { useState } from "react";
+import { styles } from "../../styles/AppStyles";
+
+export default function LoanAccountView() {
+    const [cif, setCif] = useState("");
+    const [region, setRegion] = useState("");
+    const [loan_type, setLoan_Type] = useState("");
+    const [response, setResponse] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState("");
+    const [error, setError] = useState("");
+    const [autoReset, setAutoReset] = useState(false);
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        setLoading(true);
+        setError(null);
+        setResponse([]);
+        const userToken = localStorage.getItem('userToken');
+        const url = `http://loan_account_creation/`;
+
+        try {
+            const res = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${userToken}`,
+                },
+                body: JSON.stringify({
+                    region: region,
+                    loan_type: loan_type,
+                }),
+            });
+
+            if (!res.ok) {
+                throw new Error(
+                    `API returned an error: ${res.status} ${res.statusText}`
+                );
+            }
+
+            const data = await res.json();
+            console.log("API Response Data:", data); 
+
+            setResponse(data);
+            setStatus(data.Status);
+            
+            // Only reset if auto-reset is enabled
+            if (autoReset) {
+                setLoan_Type("");
+                setCif("");
+                setRegion("");
+            }
+
+        } catch (err) {
+            console.error("Fetch error:", err);
+            setError(err.message);
+        
+            setResponse([
+                { res_data: JSON.stringify({ ERROR_DESCRIPTION: err.message }) },
+            ]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleManualReset = () => {
+        setLoan_Type("");
+        setCif("");
+        setRegion("");
+        setResponse("");
+        setError("");
+    };
+
+    const toggleStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        padding: '12px',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '8px',
+        marginBottom: '20px',
+    };
+
+    const toggleButtonStyle = {
+        position: 'relative',
+        width: '50px',
+        height: '26px',
+        backgroundColor: autoReset ? '#4CAF50' : '#ccc',
+        borderRadius: '13px',
+        cursor: 'pointer',
+        transition: 'background-color 0.3s',
+        border: 'none',
+        padding: 0,
+    };
+
+    const toggleSliderStyle = {
+        position: 'absolute',
+        top: '3px',
+        left: autoReset ? '26px' : '3px',
+        width: '20px',
+        height: '20px',
+        backgroundColor: 'white',
+        borderRadius: '50%',
+        transition: 'left 0.3s',
+    };
+
+    const resetButtonStyle = {
+        ...styles.primaryButton,
+        backgroundColor: '#6c757d',
+        marginLeft: '10px',
+    };
+
+    return (
+        <div>
+            <div style={styles.pageHeader}>
+                <div>
+                    <h1 style={styles.pageTitle}>Create Loan Account</h1>
+                    <p style={styles.pageSubtitle}>Generate loan accounts for testing</p>
+                </div>
+            </div>
+
+            <div style={styles.formCard}>
+                <div style={toggleStyle}>
+                    <span style={{ fontWeight: '500' }}>Auto-Reset Form:</span>
+                    <button 
+                        onClick={() => setAutoReset(!autoReset)}
+                        style={toggleButtonStyle}
+                        type="button"
+                    >
+                        <div style={toggleSliderStyle}></div>
+                    </button>
+                    <span style={{ color: autoReset ? '#4CAF50' : '#666' }}>
+                        {autoReset ? 'ON' : 'OFF'}
+                    </span>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                    <div style={styles.formGrid}>
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>Region</label>
+                            <select
+                                value={region}
+                                onChange={(e) => setRegion(e.target.value)}
+                                style={styles.select}
+                                required
+                            >
+                                <option value="">Select Region</option>
+                                <option value="O">O - UAT</option>
+                                <option value="X">X - UAT</option>
+                                <option value="Y">Y - UAT</option>
+                                <option value="Z">Z - UAT</option>
+                                <option value="k">K - Pre-Prod</option>
+                                <option value="J">J - Pre-Prod</option>
+                                <option value="R1">R1 - Pre-Prod</option>
+                                <option value="Y2">Y2 - Pre-Prod</option>
+                                <option value="L">L - Pre-Prod</option>
+                                <option value="C">C - Pre-Prod</option>
+                            </select>
+                        </div>
+
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>CIF</label>
+                            <input
+                                type="text"
+                                value={cif}
+                                onChange={(e) => setCif(e.target.value)}
+                                style={styles.input}
+                                required
+                            />
+                        </div>
+
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>Loan Type</label>
+                            <select
+                                value={loan_type}
+                                onChange={(e) => setLoan_Type(e.target.value)}
+                                style={styles.select}
+                                required
+                            >
+                                <option value="">Select Loan Type</option>
+                                <option value="home">Home Loan</option>
+                                <option value="education">Education Loan</option>
+                                <option value="vehicle">Vehicle Loan</option>
+                                <option value="agri">Agriculture Loan</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <button type="submit" style={styles.primaryButton} disabled={loading}>
+                            {loading ? "Submitting..." : "Submit"}
+                        </button>
+                        <button 
+                            type="button" 
+                            onClick={handleManualReset}
+                            style={resetButtonStyle}
+                        >
+                            Reset Form
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            {response && response.loan_response && (
+                <div style={styles.resultsCard}>
+                    <p><strong>Status: </strong>{response.status}</p>
+                    <p><strong>Loan Account Number: </strong>{response.loan_response}</p>
+                </div>
+            )}
+        </div>
+    );
+}

@@ -1,0 +1,166 @@
+import React, { useState } from 'react';
+
+// Assuming styles are imported or defined above
+const styles = {
+    pageHeader: { marginBottom: '20px' },
+    pageTitle: { fontSize: '24px', fontWeight: 'bold' },
+    pageSubtitle: { color: '#666' },
+    formCard: { background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' },
+    formGrid: { display: 'grid', gap: '15px' },
+    formGroup: { display: 'flex', flexDirection: 'column', gap: '5px' },
+    label: { fontWeight: '600' },
+    select: { padding: '8px', borderRadius: '4px', border: '1px solid #ccc' },
+    input: { padding: '8px', borderRadius: '4px', border: '1px solid #ccc' },
+    primaryButton: { padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' },
+    secondaryButton: { padding: '10px 20px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' },
+    resultsCard: { marginTop: '20px', padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #ddd' }
+};
+
+export default function ModView() {
+    // --- State Management ---
+    const [cif, setCif] = useState("");
+    const [region, setRegion] = useState("");
+    const [response, setResponse] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [showOutput, setShowOutput] = useState(false);
+
+    // --- Action Handlers ---
+    const handleSubmit = async () => {
+        // 1. Validation & Console Logging for "Invalid Reason"
+        if (!region || !cif) {
+            console.error("Invalid Reason: Region or CIF is missing.");
+            setError("Please select a Region and enter a CIF number.");
+            return;
+        }
+
+        setLoading(true);
+        setError("");
+        setResponse(null);
+        setShowOutput(false);
+
+        const userToken = localStorage.getItem("userToken");
+        const url = `http://10.1.161.165:5050/run/${region}?user_input=${encodeURIComponent(cif)}`;
+
+        try {
+            const res = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${userToken}`,
+                    "Content-Type": "application/json"
+                },
+            });
+
+            const data = await res.json();
+            console.log("API Response Data:", data);
+
+            setResponse(data);
+            
+            if (data.error) {
+                setError(data.error);
+            }
+            
+            // 2. Trigger the output visibility
+            setShowOutput(true);
+
+        } catch (err) {
+            console.error("Fetch error:", err);
+            setError(err.message);
+            setResponse({ error: err.message, status: "Failed" });
+            setShowOutput(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleManualReset = () => {
+        setCif("");
+        setRegion("");
+        setResponse(null);
+        setError("");
+        setShowOutput(false);
+    };
+
+    // --- Component UI ---
+    return (
+        <div style={{ padding: '20px' }}>
+            {/* Header */}
+            <div style={styles.pageHeader}>
+                <h1 style={styles.pageTitle}>Create MOD Account</h1>
+                <p style={styles.pageSubtitle}>Generate MOD accounts for testing</p>
+            </div>
+
+            {/* Form Card */}
+            <div style={styles.formCard}>
+                <div style={styles.formGrid}>
+                    {/* Region Select */}
+                    <div style={styles.formGroup}>
+                        <label style={styles.label}>Region</label>
+                        <select 
+                            value={region} 
+                            onChange={(e) => setRegion(e.target.value)}
+                            style={styles.select}
+                        >
+                            <option value="">Select Region</option>
+                            <option value="0">0 - UAT</option>
+                            <option value="X">X - UAT</option>
+                            <option value="Y">Y - UAT</option>
+                            <option value="Z">Z - UAT</option>
+                            <option value="K">K - Pre-Prod</option>
+                            <option value="J">J - Pre-Prod</option>
+                            <option value="R1">R1 - Pre-Prod</option>
+                            <option value="Y2">Y2 - Pre-Prod</option>
+                            <option value="L">L - Pre-Prod</option>
+                            <option value="C">C - Pre-Prod</option>
+                        </select>
+                    </div>
+
+                    {/* CIF Input */}
+                    <div style={styles.formGroup}>
+                        <label style={styles.label}>CIF / Input Number</label>
+                        <input 
+                            type="text"
+                            value={cif}
+                            onChange={(e) => setCif(e.target.value)}
+                            style={styles.input}
+                            placeholder="Enter CIF number"
+                        />
+                    </div>
+
+                    {/* Buttons */}
+                    <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                        <button 
+                            onClick={handleSubmit}
+                            style={styles.primaryButton}
+                            disabled={loading || !region || !cif}
+                        >
+                            {loading ? "Submitting..." : "Submit"}
+                        </button>
+
+                        <button 
+                            onClick={handleManualReset}
+                            style={styles.secondaryButton}
+                        >
+                            Reset Form
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Output Section */}
+            {showOutput && response && (
+                <div style={styles.resultsCard}>
+                    {response.message && (
+                        <p><strong>MOD Account Number:</strong> {response.message}</p>
+                    )}
+                    
+                    {(response.error || error) && (
+                        <p style={{ color: "red" }}>
+                            <strong>Error:</strong> {response.error || error}
+                        </p>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}

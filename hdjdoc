@@ -1,0 +1,20 @@
+{/* Output Section */}
+{showOutput && response && (
+    <div style={styles.resultsCard}>
+        {/* Render Success Message */}
+        {response.message && (
+            <p><strong>MOD Account Number:</strong> {response.message}</p>
+        )}
+        
+        {/* Render Error Safely */}
+        {(response.error || response.detail || error) && (
+            <p style={{ color: "red" }}>
+                <strong>Error:</strong> {
+                    typeof (response.detail || response.error || error) === 'object' 
+                    ? JSON.stringify(response.detail || response.error || error) 
+                    : (response.detail || response.error || error)
+                }
+            </p>
+        )}
+    </div>
+)}

@@ -1,33 +1,108 @@
-
-
-
 import { useState } from "react";
-import { styles } from "../../styles/AppStyles";
+
+const styles = {
+  pageHeader: {
+    marginBottom: "24px",
+    paddingBottom: "16px",
+    borderBottom: "2px solid #e5e7eb"
+  },
+  pageTitle: {
+    fontSize: "28px",
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: "8px"
+  },
+  pageSubtitle: {
+    fontSize: "14px",
+    color: "#6b7280"
+  },
+  formCard: {
+    backgroundColor: "white",
+    padding: "24px",
+    borderRadius: "8px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    marginBottom: "24px"
+  },
+  formGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "20px",
+    marginBottom: "20px"
+  },
+  formGroup: {
+    display: "flex",
+    flexDirection: "column"
+  },
+  label: {
+    fontSize: "14px",
+    fontWeight: "500",
+    color: "#374151",
+    marginBottom: "8px"
+  },
+  select: {
+    padding: "10px 12px",
+    border: "1px solid #d1d5db",
+    borderRadius: "6px",
+    fontSize: "14px",
+    backgroundColor: "white",
+    cursor: "pointer"
+  },
+  input: {
+    padding: "10px 12px",
+    border: "1px solid #d1d5db",
+    borderRadius: "6px",
+    fontSize: "14px"
+  },
+  primaryButton: {
+    padding: "10px 20px",
+    backgroundColor: "#3b82f6",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    fontSize: "14px",
+    fontWeight: "500",
+    cursor: "pointer"
+  },
+  secondaryButton: {
+    padding: "10px 20px",
+    backgroundColor: "#6b7280",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    fontSize: "14px",
+    fontWeight: "500",
+    cursor: "pointer"
+  },
+  resultsCard: {
+    backgroundColor: "#f9fafb",
+    padding: "20px",
+    borderRadius: "8px",
+    border: "1px solid #e5e7eb"
+  }
+};
 
 export default function ModView() {
   const [cif, setCif] = useState("");
   const [region, setRegion] = useState("");
-  const [response, setResponse] = useState("");
+  const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [showOutput, setShowOutput] = useState(true);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const handleSubmit = async () => {
     setLoading(true);
-    setError(null);
-    setResponse("");
+    setError("");
+    setResponse(null);
 
     const userToken = localStorage.getItem("userToken");
 
-    const url = `http://10.1.161.165:5050/run/${region.toLowerCase()}?user_input=${encodeURIComponent(cif)}`;
+    const url = `http://10.1.161.165:5050/run/${region}?user_input=${encodeURIComponent(cif)}`;
 
     try {
       const res = await fetch(url, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${userToken}`, // ✅ REQUIRED
+          Authorization: `Bearer ${userToken}`,
         },
       });
 
@@ -35,14 +110,18 @@ export default function ModView() {
       console.log("API Response Data:", data);
 
       setResponse(data);
-      setStatus(data.status);
+      
+      // Check if there's an error in the response
+      if (data.error) {
+        setError(data.error);
+      }
     } catch (err) {
       console.error("Fetch error:", err);
       setError(err.message);
 
       setResponse({
-        error: true,
-        message: err.message,
+        error: err.message,
+        status: "Failed"
       });
     } finally {
       setLoading(false);
@@ -52,7 +131,7 @@ export default function ModView() {
   const handleManualReset = () => {
     setCif("");
     setRegion("");
-    setResponse("");
+    setResponse(null);
     setError("");
   };
 
@@ -70,7 +149,7 @@ export default function ModView() {
 
       {/* Form Card */}
       <div style={styles.formCard}>
-        <form onSubmit={handleSubmit}>
+        <div>
           <div style={styles.formGrid}>
             {/* Region */}
             <div style={styles.formGroup}>
@@ -103,6 +182,7 @@ export default function ModView() {
                 value={cif}
                 onChange={(e) => setCif(e.target.value)}
                 style={styles.input}
+                placeholder="Enter CIF number"
                 required
               />
             </div>
@@ -111,197 +191,39 @@ export default function ModView() {
           {/* Buttons */}
           <div style={{ display: "flex", gap: "10px" }}>
             <button
-              type="submit"
+              onClick={handleSubmit}
               style={styles.primaryButton}
-              disabled={loading}
+              disabled={loading || !region || !cif}
             >
               {loading ? "Submitting..." : "Submit"}
             </button>
 
             <button
-              type="button"
               onClick={handleManualReset}
               style={styles.secondaryButton}
             >
               Reset Form
             </button>
           </div>
-        </form>
+        </div>
       </div>
 
       {/* Output */}
       {showOutput && response && (
         <div style={styles.resultsCard}>
-          <p>
-            <strong>Status:</strong> {response.status}
-          </p>
-        {response.message && (
+          {response.message && (
             <p>
-                <strong>MOD Account Number:</strong> {response.message}
+              <strong>MOD Account Number:</strong> {response.message}
             </p>
-        )}
-        {response.error && (
-            <p style={{ color:"red"}}>
-                <strong>Error:</strong> {response.error}
+          )}
+          
+          {response.error && (
+            <p style={{ color: "red" }}>
+              <strong>Error:</strong> {response.error}
             </p>
-        )} 
+          )}
         </div>
       )}
-      
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# -------------------------------------------------
-# Helper: Replace number starting with 85999
-# (keeps string length unchanged)
-# -------------------------------------------------
-def replace_number(message: str, user_input: str) -> str:
-    match = re.search(r"850095\d*", message)
-    if not match:
-        raise ValueError("Number starting with  not found")
-
-    old_number = match.group()
-    length = len(old_number)
-
-    # Pad or trim user input to same length
-    new_number = user_input.ljust(length, "0")[:length]
-
-    return message.replace(old_number, new_number, 1)
-
-
-# -------------------------------------------------
-# Helper: Replace known fixed value (legacy format)
-# -------------------------------------------------
-def replace_fixed_value(data: str, old_value: str, new_value: str) -> str:
-    if old_value not in data:
-        raise ValueError("Old value not found in data")
-
-    length = len(old_value)
-    adjusted_new_value = new_value.ljust(length, "0")[:length]
-
-    return data.replace(old_value, adjusted_new_value, 1)
-
-
-# -------------------------------------------------
-# Region configuration
-# -------------------------------------------------
-region_map = {
-
-
-
-    	"O": {
-        "ip": "",
-        "port": ,
-        "message":"                                                   0000000000000000000 000000 N  "
-    },
-	"X": {
-        "ip": "",
-        "port": ,
-        "message":"                                                   0000000000000000000 000000 N  "
-    },
-	"Y": {
-        "ip": "",
-        "port": ,
-        "message":"                                                   0000000000000000000 000000 N  "
-    },
-	Z": {
-        "ip": "",
-        "port": ,
-        "message":"                                                   0000000000000000000 000000 N  "
-    },
-	"K": {
-        "ip": "",
-        "port": ,
-        "message":"                                                   0000000000000000000 000000 N  "
-    },
-	"J": {
-        "ip": "",
-        "port": ,
-        "message":"                                                   0000000000000000000 000000 N  "
-    },
-"R1": {
-        "ip": "",
-        "port": ,
-        "message":"                                                   0000000000000000000 000000 N  "
-    },
-"Y2": {
-        "ip": "",
-        "port": ,
-        "message":"                                                   0000000000000000000 000000 N  "
-    },
-"L": {
-        "ip": "",
-        "port": ,
-        "message":"                                                   0000000000000000000 000000 N  "
-    },
-"C": {
-        "ip": "",
-        "port": ,
-        "message":"                                                   0000000000000000000 000000 N  "
-    },
-
-
-
-
-# -------------------------------------------------
-# API: Send region message with replaced number
-# -------------------------------------------------
-@app.post("/run/{region}")
-def run_region(region: str, user_input: str):
-    if region not in region_map:
-        raise HTTPException(status_code=404, detail="Invalid region")
-
-    data = region_map[region]
-
-    try:
-        updated_message = replace_number(data["message"], user_input)
-
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((data["ip"], data["port"]))
-        sock.sendall(updated_message.encode("utf-8"))
-
-        response= sock.recv(1024).decode("utf-8")
-        print("Received from server:", response)
-        if len(response) >= 170:
-            extracted = response[141:141+13]
-            print("Extracted 9 characters:", extracted)
-        else:
-            print("Response too short for extraction.")
-        sock.close()
-
-        return {
-            "region": region,
-            "ip": data["ip"],
-            "port": data["port"],
-            "message": extracted,
-
-            "status": "Message sent successfully"
-        }
-
-    except Exception as e:
-        return {
-            "region": region,
-            "status": "Failed",
-            "error": str(e)
-        }

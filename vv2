@@ -1,208 +1,307 @@
+
+
+
 import { useState } from "react";
 import { styles } from "../../styles/AppStyles";
 
-export default function LoanAccountView() {
-    const [cif, setCif] = useState("");
-    const [region, setRegion] = useState("");
-    const [loan_type, setLoan_Type] = useState("");
-    const [response, setResponse] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [status, setStatus] = useState("");
-    const [error, setError] = useState("");
-    const [showOutput, setShowOutput] = useState(true);
+export default function ModView() {
+  const [cif, setCif] = useState("");
+  const [region, setRegion] = useState("");
+  const [response, setResponse] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
+  const [showOutput, setShowOutput] = useState(true);
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        setLoading(true);
-        setError(null);
-        setResponse("");
-        const userToken = localStorage.getItem('userToken');
-        const url = `http://loan_account_creation/`;
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    setError(null);
+    setResponse("");
 
-        try {
-            const res = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    'Authorization': `Bearer ${userToken}`,
-                },
-                body: JSON.stringify({
-                    region: region,
-                    loan_type: loan_type,
-                }),
-            });
+    const userToken = localStorage.getItem("userToken");
 
-            if (!res.ok) {
-                throw new Error(
-                    `API returned an error: ${res.status} ${res.statusText}`
-                );
-            }
+    const url = `http://10.1.161.165:5050/run/${region.toLowerCase()}?user_input=${encodeURIComponent(cif)}`;
 
-            const data = await res.json();
-            console.log("API Response Data:", data); 
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${userToken}`, // ✅ REQUIRED
+        },
+      });
 
-            setResponse(data);
-            setStatus(data.Status);
-            
-            // Form does NOT reset - user changes manually
+      const data = await res.json();
+      console.log("API Response Data:", data);
 
-        } catch (err) {
-            console.error("Fetch error:", err);
-            setError(err.message);
-        
-            setResponse({
-                error: true,
-                message: err.message
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
+      setResponse(data);
+      setStatus(data.status);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError(err.message);
 
-    const handleManualReset = () => {
-        setLoan_Type("");
-        setCif("");
-        setRegion("");
-        setResponse("");
-        setError("");
-    };
+      setResponse({
+        error: true,
+        message: err.message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const toggleStyle = {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        padding: '12px',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '8px',
-        marginBottom: '20px',
-    };
+  const handleManualReset = () => {
+    setCif("");
+    setRegion("");
+    setResponse("");
+    setError("");
+  };
 
-    const toggleButtonStyle = {
-        position: 'relative',
-        width: '50px',
-        height: '26px',
-        backgroundColor: showOutput ? '#4CAF50' : '#ccc',
-        borderRadius: '13px',
-        cursor: 'pointer',
-        transition: 'background-color 0.3s',
-        border: 'none',
-        padding: 0,
-    };
-
-    const toggleSliderStyle = {
-        position: 'absolute',
-        top: '3px',
-        left: showOutput ? '26px' : '3px',
-        width: '20px',
-        height: '20px',
-        backgroundColor: 'white',
-        borderRadius: '50%',
-        transition: 'left 0.3s',
-    };
-
-    const resetButtonStyle = {
-        ...styles.primaryButton,
-        backgroundColor: '#6c757d',
-        marginLeft: '10px',
-    };
-
-    return (
+  return (
+    <div>
+      {/* Header */}
+      <div style={styles.pageHeader}>
         <div>
-            <div style={styles.pageHeader}>
-                <div>
-                    <h1 style={styles.pageTitle}>Create Loan Account</h1>
-                    <p style={styles.pageSubtitle}>Generate loan accounts for testing</p>
-                </div>
-            </div>
-
-            <div style={styles.formCard}>
-                <div style={toggleStyle}>
-                    <span style={{ fontWeight: '500' }}>Show Output:</span>
-                    <button 
-                        onClick={() => setShowOutput(!showOutput)}
-                        style={toggleButtonStyle}
-                        type="button"
-                    >
-                        <div style={toggleSliderStyle}></div>
-                    </button>
-                    <span style={{ color: showOutput ? '#4CAF50' : '#666' }}>
-                        {showOutput ? 'ON' : 'OFF'}
-                    </span>
-                </div>
-
-                <form onSubmit={handleSubmit}>
-                    <div style={styles.formGrid}>
-                        <div style={styles.formGroup}>
-                            <label style={styles.label}>Region</label>
-                            <select
-                                value={region}
-                                onChange={(e) => setRegion(e.target.value)}
-                                style={styles.select}
-                                required
-                            >
-                                <option value="">Select Region</option>
-                                <option value="O">O - UAT</option>
-                                <option value="X">X - UAT</option>
-                                <option value="Y">Y - UAT</option>
-                                <option value="Z">Z - UAT</option>
-                                <option value="k">K - Pre-Prod</option>
-                                <option value="J">J - Pre-Prod</option>
-                                <option value="R1">R1 - Pre-Prod</option>
-                                <option value="Y2">Y2 - Pre-Prod</option>
-                                <option value="L">L - Pre-Prod</option>
-                                <option value="C">C - Pre-Prod</option>
-                            </select>
-                        </div>
-
-                        <div style={styles.formGroup}>
-                            <label style={styles.label}>CIF</label>
-                            <input
-                                type="text"
-                                value={cif}
-                                onChange={(e) => setCif(e.target.value)}
-                                style={styles.input}
-                                required
-                            />
-                        </div>
-
-                        <div style={styles.formGroup}>
-                            <label style={styles.label}>Loan Type</label>
-                            <select
-                                value={loan_type}
-                                onChange={(e) => setLoan_Type(e.target.value)}
-                                style={styles.select}
-                                required
-                            >
-                                <option value="">Select Loan Type</option>
-                                <option value="home">Home Loan</option>
-                                <option value="education">Education Loan</option>
-                                <option value="vehicle">Vehicle Loan</option>
-                                <option value="agri">Agriculture Loan</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        <button type="submit" style={styles.primaryButton} disabled={loading}>
-                            {loading ? "Submitting..." : "Submit"}
-                        </button>
-                        <button 
-                            type="button" 
-                            onClick={handleManualReset}
-                            style={resetButtonStyle}
-                        >
-                            Reset Form
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            {showOutput && response && response.loan_response && (
-                <div style={styles.resultsCard}>
-                    <p><strong>Status: </strong>{response.status}</p>
-                    <p><strong>Loan Account Number: </strong>{response.loan_response}</p>
-                </div>
-            )}
+          <h1 style={styles.pageTitle}>Create MOD Account</h1>
+          <p style={styles.pageSubtitle}>
+            Generate MOD accounts for testing
+          </p>
         </div>
-    );
+      </div>
+
+      {/* Form Card */}
+      <div style={styles.formCard}>
+        <form onSubmit={handleSubmit}>
+          <div style={styles.formGrid}>
+            {/* Region */}
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Region</label>
+              <select
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+                style={styles.select}
+                required
+              >
+                <option value="">Select Region</option>
+                <option value="O">O - UAT</option>
+                <option value="X">X - UAT</option>
+                <option value="Y">Y - UAT</option>
+                <option value="Z">Z - UAT</option>
+                <option value="K">K - Pre-Prod</option>
+                <option value="J">J - Pre-Prod</option>
+                <option value="R1">R1 - Pre-Prod</option>
+                <option value="Y2">Y2 - Pre-Prod</option>
+                <option value="L">L - Pre-Prod</option>
+                <option value="C">C - Pre-Prod</option>
+              </select>
+            </div>
+
+            {/* CIF / Input Number */}
+            <div style={styles.formGroup}>
+              <label style={styles.label}>CIF / Input Number</label>
+              <input
+                type="text"
+                value={cif}
+                onChange={(e) => setCif(e.target.value)}
+                style={styles.input}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Buttons */}
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button
+              type="submit"
+              style={styles.primaryButton}
+              disabled={loading}
+            >
+              {loading ? "Submitting..." : "Submit"}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleManualReset}
+              style={styles.secondaryButton}
+            >
+              Reset Form
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Output */}
+      {showOutput && response && (
+        <div style={styles.resultsCard}>
+          <p>
+            <strong>Status:</strong> {response.status}
+          </p>
+        {response.message && (
+            <p>
+                <strong>MOD Account Number:</strong> {response.message}
+            </p>
+        )}
+        {response.error && (
+            <p style={{ color:"red"}}>
+                <strong>Error:</strong> {response.error}
+            </p>
+        )} 
+        </div>
+      )}
+      
+    </div>
+  );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# -------------------------------------------------
+# Helper: Replace number starting with 85999
+# (keeps string length unchanged)
+# -------------------------------------------------
+def replace_number(message: str, user_input: str) -> str:
+    match = re.search(r"850095\d*", message)
+    if not match:
+        raise ValueError("Number starting with  not found")
+
+    old_number = match.group()
+    length = len(old_number)
+
+    # Pad or trim user input to same length
+    new_number = user_input.ljust(length, "0")[:length]
+
+    return message.replace(old_number, new_number, 1)
+
+
+# -------------------------------------------------
+# Helper: Replace known fixed value (legacy format)
+# -------------------------------------------------
+def replace_fixed_value(data: str, old_value: str, new_value: str) -> str:
+    if old_value not in data:
+        raise ValueError("Old value not found in data")
+
+    length = len(old_value)
+    adjusted_new_value = new_value.ljust(length, "0")[:length]
+
+    return data.replace(old_value, adjusted_new_value, 1)
+
+
+# -------------------------------------------------
+# Region configuration
+# -------------------------------------------------
+region_map = {
+
+
+
+    	"O": {
+        "ip": "",
+        "port": ,
+        "message":"                                                   0000000000000000000 000000 N  "
+    },
+	"X": {
+        "ip": "",
+        "port": ,
+        "message":"                                                   0000000000000000000 000000 N  "
+    },
+	"Y": {
+        "ip": "",
+        "port": ,
+        "message":"                                                   0000000000000000000 000000 N  "
+    },
+	Z": {
+        "ip": "",
+        "port": ,
+        "message":"                                                   0000000000000000000 000000 N  "
+    },
+	"K": {
+        "ip": "",
+        "port": ,
+        "message":"                                                   0000000000000000000 000000 N  "
+    },
+	"J": {
+        "ip": "",
+        "port": ,
+        "message":"                                                   0000000000000000000 000000 N  "
+    },
+"R1": {
+        "ip": "",
+        "port": ,
+        "message":"                                                   0000000000000000000 000000 N  "
+    },
+"Y2": {
+        "ip": "",
+        "port": ,
+        "message":"                                                   0000000000000000000 000000 N  "
+    },
+"L": {
+        "ip": "",
+        "port": ,
+        "message":"                                                   0000000000000000000 000000 N  "
+    },
+"C": {
+        "ip": "",
+        "port": ,
+        "message":"                                                   0000000000000000000 000000 N  "
+    },
+
+
+
+
+# -------------------------------------------------
+# API: Send region message with replaced number
+# -------------------------------------------------
+@app.post("/run/{region}")
+def run_region(region: str, user_input: str):
+    if region not in region_map:
+        raise HTTPException(status_code=404, detail="Invalid region")
+
+    data = region_map[region]
+
+    try:
+        updated_message = replace_number(data["message"], user_input)
+
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((data["ip"], data["port"]))
+        sock.sendall(updated_message.encode("utf-8"))
+
+        response= sock.recv(1024).decode("utf-8")
+        print("Received from server:", response)
+        if len(response) >= 170:
+            extracted = response[141:141+13]
+            print("Extracted 9 characters:", extracted)
+        else:
+            print("Response too short for extraction.")
+        sock.close()
+
+        return {
+            "region": region,
+            "ip": data["ip"],
+            "port": data["port"],
+            "message": extracted,
+
+            "status": "Message sent successfully"
+        }
+
+    except Exception as e:
+        return {
+            "region": region,
+            "status": "Failed",
+            "error": str(e)
+        }

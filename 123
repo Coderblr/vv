@@ -1,0 +1,174 @@
+import { useState } from "react";
+import { styles } from "../../styles/AppStyles";
+
+export default function ModAccountView() {
+  const [cif, setCif] = useState("");
+  const [region, setRegion] = useState("");
+  const [response, setResponse] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
+  const [showOutput, setShowOutput] = useState(true);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    setError(null);
+    setResponse("");
+
+    try {
+      const url = `http://10.1.161.165:5050/run/${region}?user_input=${cif}`;
+
+      const res = await fetch(url, {
+        method: "POST",
+      });
+
+      const data = await res.json();
+      console.log("API Response Data:", data);
+
+      setResponse(data);
+      setStatus(data.status);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError(err.message);
+
+      setResponse({
+        error: true,
+        message: err.message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleManualReset = () => {
+    setCif("");
+    setRegion("");
+    setResponse("");
+    setError("");
+  };
+
+  /* ---- SAME STYLES AS LOAN ---- */
+  const toggleStyle = {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    padding: "12px",
+    backgroundColor: "#f8f9fa",
+    borderRadius: "8px",
+    marginBottom: "20px",
+  };
+
+  const toggleButtonStyle = {
+    position: "relative",
+    width: "50px",
+    height: "26px",
+    backgroundColor: showOutput ? "#4CAF50" : "#ccc",
+    borderRadius: "13px",
+    cursor: "pointer",
+    transition: "background-color 0.3s",
+    border: "none",
+    padding: 0,
+  };
+
+  const toggleSliderStyle = {
+    position: "absolute",
+    top: "3px",
+    left: showOutput ? "26px" : "3px",
+    width: "20px",
+    height: "20px",
+    backgroundColor: "white",
+    borderRadius: "50%",
+    transition: "left 0.3s",
+  };
+
+  const resetButtonStyle = {
+    ...styles.primaryButton,
+    backgroundColor: "#6c757d",
+    marginLeft: "10px",
+  };
+
+  return (
+    <div>
+      <div style={styles.pageHeader}>
+        <div>
+          <h1 style={styles.pageTitle}>Create MOD Account</h1>
+          <p style={styles.pageSubtitle}>
+            Generate MOD accounts for testing
+          </p>
+        </div>
+      </div>
+
+      <div style={styles.formCard}>
+        <form onSubmit={handleSubmit}>
+          <div style={styles.formGrid}>
+            {/* REGION */}
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Region</label>
+              <select
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+                style={styles.select}
+                required
+              >
+                <option value="">Select Region</option>
+                <option value="O">O - UAT</option>
+                <option value="X">X - UAT</option>
+                <option value="Y">Y - UAT</option>
+                <option value="Z">Z - UAT</option>
+                <option value="K">K - Pre-Prod</option>
+                <option value="J">J - Pre-Prod</option>
+                <option value="R1">R1 - Pre-Prod</option>
+                <option value="Y2">Y2 - Pre-Prod</option>
+                <option value="L">L - Pre-Prod</option>
+                <option value="C">C - Pre-Prod</option>
+              </select>
+            </div>
+
+            {/* CIF / INPUT */}
+            <div style={styles.formGroup}>
+              <label style={styles.label}>CIF / Input Number</label>
+              <input
+                type="text"
+                value={cif}
+                onChange={(e) => setCif(e.target.value)}
+                style={styles.input}
+                required
+              />
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button
+              type="submit"
+              style={styles.primaryButton}
+              disabled={loading}
+            >
+              {loading ? "Submitting..." : "Submit"}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleManualReset}
+              style={resetButtonStyle}
+            >
+              Reset Form
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* OUTPUT (SAME STRUCTURE AS LOAN) */}
+      {showOutput && response && response.message && (
+        <div style={styles.resultsCard}>
+          <p>
+            <strong>Status:</strong> {response.status}
+          </p>
+          <p>
+            <strong>MOD Account Number:</strong> {response.message}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}

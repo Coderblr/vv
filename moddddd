@@ -1,0 +1,134 @@
+import { useState } from "react";
+import { styles } from "../../styles/AppStyles";
+
+export default function ModView() {
+  const [region, setRegion] = useState("");
+  const [cif, setCif] = useState("");
+  const [response, setResponse] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setResponse(null);
+
+    try {
+      const userToken = localStorage.getItem("userToken");
+
+      const url = `http://10.1.161.165:5050/run/${region}?user_input=${cif}`;
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
+
+      const data = await res.json();
+      console.log("API Response:", data);
+
+      setResponse(data);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReset = () => {
+    setRegion("");
+    setCif("");
+    setResponse(null);
+    setError("");
+  };
+
+  return (
+    <div>
+      <div style={styles.pageHeader}>
+        <h1 style={styles.pageTitle}>Create MOD Account</h1>
+        <p style={styles.pageSubtitle}>Generate MOD Account</p>
+      </div>
+
+      <div style={styles.formCard}>
+        <form onSubmit={handleSubmit}>
+          <div style={styles.formGrid}>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Region</label>
+              <select
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+                style={styles.select}
+                required
+              >
+                <option value="">Select Region</option>
+                <option value="O">O - UAT</option>
+                <option value="X">X - UAT</option>
+                <option value="Y">Y - UAT</option>
+                <option value="Z">Z - UAT</option>
+                <option value="K">K - Pre-Prod</option>
+                <option value="J">J - Pre-Prod</option>
+                <option value="R1">R1 - Pre-Prod</option>
+                <option value="Y2">Y2 - Pre-Prod</option>
+                <option value="L">L - Pre-Prod</option>
+                <option value="C">C - Pre-Prod</option>
+              </select>
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>CIF / Input Number</label>
+              <input
+                type="text"
+                value={cif}
+                onChange={(e) => setCif(e.target.value)}
+                style={styles.input}
+                required
+              />
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button
+              type="submit"
+              style={styles.primaryButton}
+              disabled={loading}
+            >
+              {loading ? "Submitting..." : "Submit"}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleReset}
+              style={{ ...styles.primaryButton, backgroundColor: "#6c757d" }}
+            >
+              Reset
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* RESULT */}
+      {response && response.status && (
+        <div style={styles.resultsCard}>
+          <p>
+            <strong>Status:</strong> {response.status}
+          </p>
+          {response.message && (
+            <p>
+              <strong>MOD Account Number:</strong> {response.message}
+            </p>
+          )}
+          {response.error && (
+            <p style={{ color: "red" }}>
+              <strong>Error:</strong> {response.error}
+            </p>
+          )}
+        </div>
+      )}
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+    </div>
+  );
+}

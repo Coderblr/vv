@@ -1,58 +1,197 @@
-{/* Output Section */}
-{showOutput && response && (
-    <div style={styles.resultsCard}>
-        {/* Success Message */}
-        {response.message && (
-            <p><strong>MOD Account Number:</strong> {response.message}</p>
-        )}
-        
-        {/* Safe Error Rendering */}
-        {(response.error || response.detail || error) && (
-            <div style={{ color: "red" }}>
-                <strong>Error:</strong> {
-                    Array.isArray(response.detail) 
-                        ? response.detail.map((err, i) => <div key={i}>{err.msg || JSON.stringify(err)}</div>)
-                        : typeof (response.detail || response.error || error) === 'object'
-                            ? JSON.stringify(response.detail || response.error || error)
-                            : (response.detail || response.error || error)
-                }
-            </div>
-        )}
-    </div>
-)}
+"use client";
 
+import { useState } from "react";
 
+export default function ModView() {
+  const [cif, setCif] = useState("");
+  const [region, setRegion] = useState("");
+  const [response, setResponse] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showOutput, setShowOutput] = useState(false);
 
+  const handleSubmit = async () => {
+    // Validation
+    if (!region || !cif) {
+      console.error("Invalid Reason: Region or CIF is missing.");
+      setError("Please select a Region and enter a CIF number.");
+      return;
+    }
 
-
-
-
-
-
-const handleSubmit = async () => {
-    // ... validation and loading states ...
+    setLoading(true);
+    setError("");
+    setResponse(null);
 
     const userToken = localStorage.getItem("userToken");
-    const url = `http://10.1.161.165:5050/run/${region}?user_input=${encodeURIComponent(cif)}`;
+    const url = "http://10.1.161.165:5050/rd";
 
     try {
-        const res = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${userToken}`,
-                "Content-Type": "application/json" // Crucial for 422 errors
-            },
-            // Add a body even if empty, or include the data if the API requires it
-            body: JSON.stringify({
-                region: region,
-                cif: cif
-            })
-        });
+      console.log("Sending request with:", { region, user_input: cif });
+      
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          region: region.trim(), // Trim any whitespace
+          user_input: cif.trim(), // Trim any whitespace
+        }),
+      });
 
-        const data = await res.json();
-        setResponse(data);
-        setShowOutput(true);
+      const data = await res.json();
+      console.log("API Response Data:", data);
+
+      setResponse(data);
+
+      if (!res.ok) {
+        setError(data.detail || `API Error: ${res.status}`);
+      }
     } catch (err) {
-        // ... error handling ...
+      console.error("Fetch error:", err);
+      setError(err.message);
+      setResponse({ error: err.message });
+    } finally {
+      setLoading(false);
     }
-};
+  };
+
+  return (
+    <div>
+      <div style={{ background: "#fff", padding: "24px", borderRadius: "8px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", marginBottom: "20px" }}>
+        <h1 style={{ fontSize: "24px", fontWeight: "600", color: "#374151", marginBottom: "8px" }}>
+          Create RD Account
+        </h1>
+        <p style={{ fontSize: "14px", color: "#6b7280", marginBottom: "0" }}>
+          Generate RD accounts for testing
+        </p>
+      </div>
+
+      {/* Form Card */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
+        {/* Region Select */}
+        <div>
+          <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "#374151", marginBottom: "8px" }}>
+            Region
+          </label>
+          <select
+            value={region}
+            onChange={(e) => setRegion(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              fontSize: "14px",
+              border: "1px solid #d1d5db",
+              borderRadius: "6px",
+              background: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            <option value="">Select Region</option>
+            <option value="o">o - UAT</option>
+            <option value="y">y - UAT</option>
+            <option value="z">z - UAT</option>
+            <option value="k">k - Pre-Prod</option>
+            <option value="j">j - Pre-Prod</option>
+            <option value="r1">r1 - Pre-Prod</option>
+            <option value="y2">y2 - Pre-Prod</option>
+            <option value="l">l - Pre-Prod</option>
+            <option value="c">c - Pre-Prod</option>
+          </select>
+        </div>
+
+        {/* CIF Input */}
+        <div>
+          <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "#374151", marginBottom: "8px" }}>
+            CIF / Input Number
+          </label>
+          <input
+            type="text"
+            value={cif}
+            onChange={(e) => setCif(e.target.value)}
+            placeholder="Enter CIF number"
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              fontSize: "14px",
+              border: "1px solid #d1d5db",
+              borderRadius: "6px",
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Submit Button */}
+      <button
+        onClick={handleSubmit}
+        disabled={loading || !region || !cif}
+        style={{
+          padding: "10px 24px",
+          fontSize: "14px",
+          fontWeight: "600",
+          color: "#fff",
+          background: loading || !region || !cif ? "#9ca3af" : "#2563eb",
+          border: "none",
+          borderRadius: "6px",
+          cursor: loading || !region || !cif ? "not-allowed" : "pointer",
+        }}
+      >
+        {loading ? "Submitting..." : "Submit"}
+      </button>
+
+      {/* Output Section - Will always show if response exists */}
+      {response && (
+        <div style={{ background: "#fff", padding: "24px", borderRadius: "8px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", border: "1px solid #e5e7eb", marginTop: "20px" }}>
+          <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#1f2937", marginBottom: "20px", borderBottom: "2px solid #2563eb", paddingBottom: "10px" }}>
+            API Response
+          </h3>
+
+          {/* Success Section */}
+          {response.status === "Message sent successfully" && (
+            <div style={{ background: "#f0fdf4", padding: "20px", borderRadius: "6px", border: "1px solid #bbf7d0", marginBottom: "20px" }}>
+              <p style={{ fontSize: "16px", fontWeight: "600", color: "#059669", marginBottom: "16px" }}>
+                ✓ RD Account Created Successfully
+              </p>
+
+              <div style={{ marginBottom: "12px" }}>
+                <span style={{ fontWeight: "600", color: "#374151" }}>Region: </span>
+                <span style={{ color: "#1f2937", fontSize: "15px" }}>
+                  {response.region || "N/A"}
+                </span>
+              </div>
+
+              <div style={{ marginBottom: "12px" }}>
+                <span style={{ fontWeight: "600", color: "#374151" }}>RD Account Number: </span>
+                <span style={{ color: "#2563eb", fontSize: "18px", fontWeight: "700", letterSpacing: "1px" }}>
+                  {response.message || "N/A"}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Full Response JSON */}
+          <details style={{ cursor: "pointer" }}>
+            <summary style={{ fontWeight: "600", color: "#374151", marginBottom: "10px", padding: "10px", background: "#f9fafb", borderRadius: "6px" }}>
+              View Full Response Data
+            </summary>
+            <div style={{ background: "#1f2937", padding: "16px", borderRadius: "6px", marginTop: "10px", overflow: "auto" }}>
+              <pre style={{ margin: 0, fontSize: "12px", color: "#10b981", fontFamily: "monospace" }}>
+                {JSON.stringify(response, null, 2)}
+              </pre>
+            </div>
+          </details>
+        </div>
+      )}
+
+      {/* Error Section */}
+      {error && (
+        <div style={{ background: "#fef2f2", padding: "16px", borderRadius: "6px", border: "1px solid #fecaca", marginTop: "20px" }}>
+          <p style={{ color: "#dc2626", fontWeight: "600", margin: 0 }}>
+            ⚠ Error: {error}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}

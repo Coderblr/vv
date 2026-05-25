@@ -1,229 +1,205 @@
-import { useState } from "react";
+Based on the product names visible in the sheet, these product codes can be broadly segregated into the following account/loan categories:
+Category / Type of Account
+Product Codes & Product Names
+KCC / Crop Loan Accounts
+61311212 – KCC Arunachal Pradesh AKY
 
-const styles = {
-  pageHeader: {
-    marginBottom: "24px",
-    paddingBottom: "16px",
-    borderBottom: "2px solid #e5e7eb"
-  },
-  pageTitle: {
-    fontSize: "28px",
-    fontWeight: "600",
-    color: "#111827",
-    marginBottom: "8px"
-  },
-  pageSubtitle: {
-    fontSize: "14px",
-    color: "#6b7280"
-  },
-  formCard: {
-    backgroundColor: "white",
-    padding: "24px",
-    borderRadius: "8px",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-    marginBottom: "24px"
-  },
-  formGrid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "20px",
-    marginBottom: "20px"
-  },
-  formGroup: {
-    display: "flex",
-    flexDirection: "column"
-  },
-  label: {
-    fontSize: "14px",
-    fontWeight: "500",
-    color: "#374151",
-    marginBottom: "8px"
-  },
-  select: {
-    padding: "10px 12px",
-    border: "1px solid #d1d5db",
-    borderRadius: "6px",
-    fontSize: "14px",
-    backgroundColor: "white",
-    cursor: "pointer"
-  },
-  input: {
-    padding: "10px 12px",
-    border: "1px solid #d1d5db",
-    borderRadius: "6px",
-    fontSize: "14px"
-  },
-  primaryButton: {
-    padding: "10px 20px",
-    backgroundColor: "#3b82f6",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    fontSize: "14px",
-    fontWeight: "500",
-    cursor: "pointer"
-  },
-  secondaryButton: {
-    padding: "10px 20px",
-    backgroundColor: "#6b7280",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    fontSize: "14px",
-    fontWeight: "500",
-    cursor: "pointer"
-  },
-  resultsCard: {
-    backgroundColor: "#f9fafb",
-    padding: "20px",
-    borderRadius: "8px",
-    border: "1px solid #e5e7eb"
-  }
-};
+64304183 – NVSN KCC TO ATL SEV CALA
 
-export default function ModView() {
-  const [cif, setCif] = useState("");
-  const [region, setRegion] = useState("");
-  const [response, setResponse] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [showOutput, setShowOutput] = useState(true);
+65301001 – MC-Revised KCC
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    setError("");
-    setResponse(null);
+65301046 – KCC Animal husbandry
 
-    const userToken = localStorage.getItem("userToken");
+65301047 – MC-ACC-PACS-CROP LOANS
 
-    const url = `http://10.1.161.165:5050/run/${region}?user_input=${encodeURIComponent(cif)}`;
+65301052 – MC-ACC-PACS-CROP LOANS-COMM
 
-    try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${userToken}`,
-        },
-      });
+65301209 – KCC Fisheries
 
-      const data = await res.json();
-      console.log("API Response Data:", data);
+65301215 – KISAN SAMRIDDHI RIN (KSR)
+Agriculture Term Loans (ATL)
+64304279 – MC-ATL-KCC-CNVRSN LOAN
 
-      setResponse(data);
-      
-      // Check if there's an error in the response
-      if (data.error) {
-        setError(data.error);
-      }
-    } catch (err) {
-      console.error("Fetch error:", err);
-      setError(err.message);
+64306265 – MC-ATL-PACS-MI-AGRI
 
-      setResponse({
-        error: err.message,
-        status: "Failed"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+64306266 – MC-ATL-PACS-FM-AGRI
 
-  const handleManualReset = () => {
-    setCif("");
-    setRegion("");
-    setResponse(null);
-    setError("");
-  };
+64306267 – MC-ATL-PACS-HORTI-AGRI
 
-  return (
-    <div>
-      {/* Header */}
-      <div style={styles.pageHeader}>
-        <div>
-          <h1 style={styles.pageTitle}>Create MOD Account</h1>
-          <p style={styles.pageSubtitle}>
-            Generate MOD accounts for testing
-          </p>
-        </div>
-      </div>
+64306268 – MC-ATL-PACS-SHG-JLG-ALLIED
 
-      {/* Form Card */}
-      <div style={styles.formCard}>
-        <div>
-          <div style={styles.formGrid}>
-            {/* Region */}
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Region</label>
-              <select
-                value={region}
-                onChange={(e) => setRegion(e.target.value)}
-                style={styles.select}
-                required
-              >
-                <option value="">Select Region</option>
-                <option value="O">O - UAT</option>
-                <option value="X">X - UAT</option>
-                <option value="Y">Y - UAT</option>
-                <option value="Z">Z - UAT</option>
-                <option value="K">K - Pre-Prod</option>
-                <option value="J">J - Pre-Prod</option>
-                <option value="R1">R1 - Pre-Prod</option>
-                <option value="Y2">Y2 - Pre-Prod</option>
-                <option value="L">L - Pre-Prod</option>
-                <option value="C">C - Pre-Prod</option>
-              </select>
-            </div>
+64306269 – MC-ATL-PACS-ALLIED AGRI
 
-            {/* CIF / Input Number */}
-            <div style={styles.formGroup}>
-              <label style={styles.label}>CIF / Input Number</label>
-              <input
-                type="text"
-                value={cif}
-                onChange={(e) => setCif(e.target.value)}
-                style={styles.input}
-                placeholder="Enter CIF number"
-                required
-              />
-            </div>
-          </div>
+64304007 – MC-ATL DAIRY-PROCESSING
 
-          {/* Buttons */}
-          <div style={{ display: "flex", gap: "10px" }}>
-            <button
-              onClick={handleSubmit}
-              style={styles.primaryButton}
-              disabled={loading || !region || !cif}
-            >
-              {loading ? "Submitting..." : "Submit"}
-            </button>
+64304158 – MC-ATL SOLARPHOTOVOLTAIC
 
-            <button
-              onClick={handleManualReset}
-              style={styles.secondaryButton}
-            >
-              Reset Form
-            </button>
-          </div>
-        </div>
-      </div>
+64304160 – MC-ATL-POLY HOUSE
 
-      {/* Output */}
-      {showOutput && response && (
-        <div style={styles.resultsCard}>
-          {response.message && (
-            <p>
-              <strong>MOD Account Number:</strong> {response.message}
-            </p>
-          )}
-          
-          {response.error && (
-            <p style={{ color: "red" }}>
-              <strong>Error:</strong> {response.error}
-            </p>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
+64304188 – MC-ATL-COMBINE HARVESTER
+
+64304189 – NEW TRACTOR LOAN SCHEME
+
+64304190 – ABAL-AGRI TL
+
+64304191 – ABAL-ALLIED TL
+
+64304259 – MC-ATL-POWER TILLER
+
+64304260 – MC-ATL-POLY HOUSE
+
+64304282 – MC-ATL-DAIRY/PROCESSING
+
+64306002 – MC-ATL Composite minor irrigation
+
+64306008 – MC-ATL POULTRY-PROCESSING
+
+64306012 – MC-ATL Other AGL Finance
+
+64306014 – MC-ATL Sheep-Goat-Pig
+
+64306015 – MC-ATL Fishing-Processing
+
+64306035 – MC-ATL Horticulture-Nur
+
+64306157 – MC-ATL Agr Infra Fund loan
+
+64306171 – MC-ATL Debt Swapping
+
+64306177 – MC-ATL Other AGL Finance
+
+64306178 – MC-ATL Sheep/Goat/Pig
+
+64306179 – MC-ATL Fishing/Processing
+
+64306180 – MC ATL Agri Clinic & Agri Business Centers
+
+64306183 – MC-ATL-HORTICULTURE/NURSERY
+
+64306186 – MC-ATL Horticulture Arunachal ABY
+
+64306284 – MC-TL-PMEGP-Agri
+
+64306337 – MC-ATL Poultry/Processing
+
+64306282 – MC-TL-MMMUY GI-MSMF
+
+64306283 – MC-TL-MMMUY GI-Allied
+PMEGP / Government Sponsored Loans
+64008001 – PMFME
+
+64008005 – EB-TL-PMEGP-Agri
+
+65008003 – EB-CC-PMEGP-AGRI
+
+65308003 – MC-CC-PMEGP-AGRI
+Warehouse / Pledge / Receivable Finance
+64314115 – MC-DL-FARM RECVBLE KERLA
+
+64314259 – MC-DL-PML-OTHER WHRS-12m
+
+64314260 – MC-DL-PML-eNWRS-6M
+
+64314261 – MC-DL-PML-eNWRS-12M
+
+64314262 – MC-DL-PML-CM-WHRS-6M
+
+64314263 – MC-DL-PML-CM-WHRS-12M
+
+64306185 – MC ATL Const. of cold storage/Warehouse
+Agri Infrastructure Fund (AIF)
+64306156 – MCATLDAIRY-PROC-CORP-TIE
+
+64306158 – MC ATL Agr Infra Fund-EQI
+
+64306159 – MC ATL Agr Infra Fund-EHI
+
+64306160 – MC ATL Agr Infra Fund-EYI
+
+64306346 – MC ATL AIF EMI 9% Fixed
+Gold Loan Against Agriculture
+65301010 – MC-Gold Loan for Agri Production
+Mudra Loans (OD / Processing)
+65311149 – MC-OD MUDRA DAIRY-PROCESSING
+
+65311150 – MC-MUDRA DAIRY/PROCESSING-DOD
+
+65311151 – MC-OD MUDRA FISHERY-PROCESSING
+
+65311152 – MC-MUDRA FISHERY/PROCESSING-DOD
+
+65311153 – MC-OD MUDRA PIGGERY-PROCESSING
+
+65311154 – MC-MUDRA PIGGERY/PROCESSING-DOD
+
+65311155 – MC-OD MUDRA Goat Rearing-PROCE
+
+65311156 – MC-MUDRA Goat Rearing/PROCE-DOD
+
+65311157 – MC-OD MUDRA Sheep-PROCESSING
+
+65311158 – MC-MUDRA Sheep/PROCESSING-DOD
+
+65311159 – MC-OD MUDRA Poultry-PROCESSING
+
+65311160 – MC-MUDRA Poultry/PROCESSING-DOD
+
+65311161 – MC-OD MUDRA-SERICULTURE-PROC
+
+65311162 – MC-MUDRA-SRICLTURE/PROC (DOD)
+
+65311163 – MC-OD MUDRA-BEE KEEPING-PROCING
+
+65311164 – MC-MUDRA-BEE KEPNG/PROCING-DOD
+
+65311165 – MC-OD MUDRA-MUSHROOM PROCING
+
+65311166 – Mudra Mushroom Loan Scheme
+ABAL / Allied Agriculture OD Accounts
+65311168 – MC-OD-ABAL-AGRI
+
+65311169 – MC-OD-ABAL-ALLIED
+
+65311171 – MC-ABAL-ALLIED-DROPLINE OD
+Self Help Group (SHG) / NRLM Accounts
+64306030 – MC-ATL Self Help Group Ag
+
+64306222 – MC-ATL SelfHelpGrp Ag>10L
+
+64306230 – Agri NRLM subvention eligible SHGs-ATL
+
+64306235 – MC-NRLM-SHG-TIERED-SECURED
+
+64306236 – MC-ATL-NRLM-SHG-TIERED-SECURED
+
+65301108 – MC-ACC Self Help Group
+
+65301109 – MC-Women SHG-NGO Support SCH
+
+65301160 – MC-ACC Self Help Group >10L
+
+65301161 – MC-Women SHG NGO Supp SCH >10L
+
+65301208 – Agri NRLM subvention eligible SHGs-ACC
+
+65301217 – Agri NRLM subvention eligible SHGs-ACC
+
+65301218 – MC-ACC-NRLM-SHG-TIERED-SECURED
+
+65305003 – AB-MC-CC-SKDRDP-SHG-WOMEN-AGR
+
+65305004 – MR-BR-CC-SKDRDP-SHG-GEN-AGR
+
+64304031 – MC-SHG Refinance By NSTFDC
+Bills / Inland Agri Finance
+71301001 – Constliab on LC Inland Agri
+
+72301010 – Constliab on BG Inland Agri
+SBOD / Special Accounts
+16111411 – SBOD
+
+16111431 – SBOD
+Direct Agriculture Accounts
+61305003 – AB-ACC DIR (AGRI)
+
+62308001 – AB-ATL-DIR (AGRI)

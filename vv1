@@ -1,14 +1,28 @@
-COLUMN_PROMPT = """
-You are an expert banking synthetic data generator.
+from langchain_openai import ChatOpenAI
+from langchain.prompts import PromptTemplate
+from prompts.column_prompt import COLUMN_PROMPT
+from config import OPENAI_API_KEY
 
-Generate realistic dummy values for this database column.
+class LLMGenerator:
 
-Column Name: {column_name}
-Datatype: {datatype}
-Table Name: {table_name}
+    def __init__(self):
 
-Rules:
-- Return only realistic sample value
-- No explanation
-- Banking domain realistic values
-"""
+        self.llm = ChatOpenAI(
+            api_key=OPENAI_API_KEY,
+            model="gpt-4o-mini",
+            temperature=0.3
+        )
+
+    def generate_value(self, table_name, column_name, datatype):
+
+        prompt = PromptTemplate.from_template(COLUMN_PROMPT)
+
+        chain = prompt | self.llm
+
+        result = chain.invoke({
+            "table_name": table_name,
+            "column_name": column_name,
+            "datatype": datatype
+        })
+
+        return result.content.strip()

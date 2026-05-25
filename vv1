@@ -1,46 +1,14 @@
-import re
-from models.schema_models import TableSchema, ColumnSchema
+COLUMN_PROMPT = """
+You are an expert banking synthetic data generator.
 
-class SQLParser:
+Generate realistic dummy values for this database column.
 
-    def parse_sql(self, sql_text: str):
+Column Name: {column_name}
+Datatype: {datatype}
+Table Name: {table_name}
 
-        tables = []
-
-        table_blocks = re.findall(
-            r'CREATE TABLE\s+(\w+)\s*\((.*?)\);',
-            sql_text,
-            re.S | re.I
-        )
-
-        for table_name, columns_text in table_blocks:
-
-            columns = []
-
-            lines = columns_text.split(",")
-
-            for line in lines:
-
-                line = line.strip()
-
-                match = re.match(r'(\w+)\s+([A-Z0-9\(\)]+)', line)
-
-                if match:
-                    col_name = match.group(1)
-                    datatype = match.group(2)
-
-                    columns.append(
-                        ColumnSchema(
-                            name=col_name,
-                            datatype=datatype
-                        )
-                    )
-
-            tables.append(
-                TableSchema(
-                    table_name=table_name,
-                    columns=columns
-                )
-            )
-
-        return tables
+Rules:
+- Return only realistic sample value
+- No explanation
+- Banking domain realistic values
+"""

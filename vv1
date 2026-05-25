@@ -1,24 +1,13 @@
-import pandas as pd
-from services.faker_generator import FakerGenerator
+import os
 
-class DataOrchestrator:
+class ExportService:
 
-    def __init__(self):
+    def export_csv(self, df, table_name):
 
-        self.fake_generator = FakerGenerator()
+        os.makedirs("outputs", exist_ok=True)
 
-    def generate_table_data(self, table_schema, rows=100):
+        file_path = f"outputs/{table_name}.csv"
 
-        records = []
+        df.to_csv(file_path, index=False)
 
-        for _ in range(rows):
-
-            row = {}
-
-            for col in table_schema.columns:
-
-                row[col.name] = self.fake_generator.generate(col.name)
-
-            records.append(row)
-
-        return pd.DataFrame(records)
+        return file_path

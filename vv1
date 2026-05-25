@@ -1,39 +1,24 @@
-from faker import Faker
-import random
+import pandas as pd
+from services.faker_generator import FakerGenerator
 
-fake = Faker()
+class DataOrchestrator:
 
-class FakerGenerator:
+    def __init__(self):
 
-    def generate(self, column_name):
+        self.fake_generator = FakerGenerator()
 
-        col = column_name.lower()
+    def generate_table_data(self, table_schema, rows=100):
 
-        if "name" in col:
-            return fake.name()
+        records = []
 
-        elif "address" in col:
-            return fake.address()
+        for _ in range(rows):
 
-        elif "date" in col:
-            return str(fake.date())
+            row = {}
 
-        elif "mobile" in col:
-            return fake.phone_number()
+            for col in table_schema.columns:
 
-        elif "email" in col:
-            return fake.email()
+                row[col.name] = self.fake_generator.generate(col.name)
 
-        elif "account" in col:
-            return str(random.randint(1000000000, 9999999999))
+            records.append(row)
 
-        elif "cif" in col:
-            return str(random.randint(100000, 999999))
-
-        elif "amount" in col:
-            return round(random.uniform(1000, 500000), 2)
-
-        elif "loan" in col:
-            return round(random.uniform(10000, 10000000), 2)
-
-        return fake.word()
+        return pd.DataFrame(records)

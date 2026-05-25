@@ -1,28 +1,39 @@
-from langchain_openai import ChatOpenAI
-from langchain.prompts import PromptTemplate
-from prompts.column_prompt import COLUMN_PROMPT
-from config import OPENAI_API_KEY
+from faker import Faker
+import random
 
-class LLMGenerator:
+fake = Faker()
 
-    def __init__(self):
+class FakerGenerator:
 
-        self.llm = ChatOpenAI(
-            api_key=OPENAI_API_KEY,
-            model="gpt-4o-mini",
-            temperature=0.3
-        )
+    def generate(self, column_name):
 
-    def generate_value(self, table_name, column_name, datatype):
+        col = column_name.lower()
 
-        prompt = PromptTemplate.from_template(COLUMN_PROMPT)
+        if "name" in col:
+            return fake.name()
 
-        chain = prompt | self.llm
+        elif "address" in col:
+            return fake.address()
 
-        result = chain.invoke({
-            "table_name": table_name,
-            "column_name": column_name,
-            "datatype": datatype
-        })
+        elif "date" in col:
+            return str(fake.date())
 
-        return result.content.strip()
+        elif "mobile" in col:
+            return fake.phone_number()
+
+        elif "email" in col:
+            return fake.email()
+
+        elif "account" in col:
+            return str(random.randint(1000000000, 9999999999))
+
+        elif "cif" in col:
+            return str(random.randint(100000, 999999))
+
+        elif "amount" in col:
+            return round(random.uniform(1000, 500000), 2)
+
+        elif "loan" in col:
+            return round(random.uniform(10000, 10000000), 2)
+
+        return fake.word()

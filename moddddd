@@ -1,33 +1,14 @@
-<div style={{ fontSize: "12px", marginBottom: "15px" }}>
-    <div style={{ color: /[A-Z]/.test(new_password) ? "green" : "red" }}>
-        {/[A-Z]/.test(new_password) ? "✓" : "✗"} At least 1 uppercase letter
-    </div>
+const passwordChecks = {
+    uppercase: /[A-Z]/.test(new_password),
+    lowercase: /[a-z]/.test(new_password),
+    number: /\d/.test(new_password),
+    special: /[@$!%*?&^#]/.test(new_password),
+    length: new_password.length >= 7 && new_password.length <= 30,
+};
 
-    <div style={{ color: /[a-z]/.test(new_password) ? "green" : "red" }}>
-        {/[a-z]/.test(new_password) ? "✓" : "✗"} At least 1 lowercase letter
-    </div>
-
-    <div style={{ color: /\d/.test(new_password) ? "green" : "red" }}>
-        {/\d/.test(new_password) ? "✓" : "✗"} At least 1 number
-    </div>
-
-    <div style={{ color: /[@$!%*?&^#]/.test(new_password) ? "green" : "red" }}>
-        {/[@$!%*?&^#]/.test(new_password) ? "✓" : "✗"} At least 1 special character
-    </div>
-
-    <div
-        style={{
-            color:
-                new_password.length >= 7 &&
-                new_password.length <= 30
-                    ? "green"
-                    : "red",
-        }}
-    >
-        {new_password.length >= 7 &&
-        new_password.length <= 30
-            ? "✓"
-            : "✗"}{" "}
-        Length between 7 and 30 characters
-    </div>
-</div>
+const isPasswordValid =
+    passwordChecks.uppercase &&
+    passwordChecks.lowercase &&
+    passwordChecks.number &&
+    passwordChecks.special &&
+    passwordChecks.length;

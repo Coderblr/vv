@@ -1,0 +1,73 @@
+from sqlalchemy import text
+
+@router.get("/department_user_summary", tags=["Dashboard"])
+def department_user_summary(session: DB5.SessionDep):
+
+    query = """
+    SELECT
+        departmentCode,
+
+        SUM(
+            CASE
+                WHEN username REGEXP '^[0-9]'
+                THEN 1
+                ELSE 0
+            END
+        ) AS banker_total_users,
+
+        SUM(
+            CASE
+                WHEN username REGEXP '^[0-9]'
+                AND disabled = FALSE
+                THEN 1
+                ELSE 0
+            END
+        ) AS banker_active_users,
+
+        SUM(
+            CASE
+                WHEN username REGEXP '^[A-Za-z]'
+                THEN 1
+                ELSE 0
+            END
+        ) AS vendor_total_users,
+
+        SUM(
+            CASE
+                WHEN username REGEXP '^[A-Za-z]'
+                AND disabled = FALSE
+                THEN 1
+                ELSE 0
+            END
+        ) AS vendor_active_users
+
+    FROM dbuser
+    GROUP BY departmentCode
+    ORDER BY departmentCode
+    """
+
+    result = session.exec(text(query)).all()
+
+    return result
+
+
+
+
+
+
+
+
+
+@router.get("/employee_productivity", tags=["Dashboard"])
+def employee_productivity(session: DB5.SessionDep):
+
+    users = session.exec(
+        select(
+            CreatedData.CreatedData.username,
+            func.count().label("cif_count")
+        )
+        .group_by(CreatedData.CreatedData.username)
+        .order_by(desc(func.count()))
+    ).all()
+
+    return users
